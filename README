@@ -1,0 +1,7 @@
+Weather FrontEnd Task - 
+Yuval Amiel
+
+
+The starter page is index.html. That page displays the weather for the selected city.
+From there, the user can go to the 2nd page(dayPage.html), where he can see the weather for
+the date and city of his choosing.
