@@ -26,10 +26,15 @@ let weather = (function(){
             "Philadelphia": 2471217,
             "Rio de Janeiro":455825,
             "Liverpool" : 26734};
-        let listOfCities = document.getElementById("cityList");
-        let counter = 1;
 
-        //here i'll add each city dynamically to the html
+        myPublicData.cityToList(CityNames)
+    }
+
+    
+    //here i'll add each city dynamically to the HTML
+    myPublicData.cityToList = function(CityNames){
+        let counter = 1;
+        let listOfCities = document.getElementById("cityList");
         for(let key in CityNames){
             let option = document.createElement("option");
             option.innerHTML = key;
@@ -102,9 +107,7 @@ let weather = (function(){
                 dataHTML += myFunctions.getDayData(data.consolidated_weather[i]);
                 day++;
             }
-
             dataHTML += "</div>";
-
             weather.innerHTML = dataHTML;
         }
 
@@ -114,7 +117,7 @@ let weather = (function(){
          */
         myFunctions.getDayData = function (data){
             let tempString = "";
-            let PicName = data.weather_state_abbr;
+            const PicName = data.weather_state_abbr;
             tempString +=
             "<img src='https://www.metaweather.com/static/img/weather/" + PicName + ".svg' width=\"50\" height=\"50\">" +
                 data.weather_state_name + "<br>" +
@@ -134,15 +137,35 @@ let weather = (function(){
             (the endIndex would be (+5) to get the time in this format: HH:MM)
          */
         myFunctions.buildAreaTimes = function (data){
-            let CurrTime = document.getElementById("time");
-            let WeatherSunRise = document.getElementById("sunRiseTime");
-            let WeatherSunSet = document.getElementById("sunSetTime");
-            let startIndex = data.time.indexOf('T') + 1;
-            let endIndex = startIndex + 5;
+            const CurrTime = document.getElementById("time");
+            const WeatherSunRise = document.getElementById("sunRiseTime");
+            const WeatherSunSet = document.getElementById("sunSetTime");
+            const startIndex = data.time.indexOf('T') + 1;
+            const endIndex = startIndex + 5;
 
             CurrTime.innerHTML = " : " +data.time.substring(startIndex, endIndex);
             WeatherSunRise.innerHTML = " : " +data.sun_rise.substring(startIndex, endIndex);
             WeatherSunSet.innerHTML = " : " +data.sun_set.substring(startIndex, endIndex);
+        }
+
+
+        myFunctions.retrieveData = 
+        function(loadingGif, WeatherNameData, weather, cityID){
+                
+            async function myFetch() {
+                let response = await fetch
+                ('https://www.metaweather.com/api/location/' +  cityID);
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response();
+              
+              }
+              myFetch().then(() => {
+                loadingGif.hidden = true;
+                myFunctions.buildWeatherInfo(data, WeatherNameData, weather);
+              }).catch(e => console.log(e));
+        
         }
 
         /*
@@ -152,38 +175,21 @@ let weather = (function(){
         myFunctions.show = function (){
 
             let weather = document.getElementById("weatherContent");
-            let listOfCities = document.getElementById("cityList");
-            let desiredCityIndex = myPublicData.wantedIndex(listOfCities);
+            const listOfCities = document.getElementById("cityList");
+            const desiredCityIndex = myPublicData.wantedIndex(listOfCities);
 
-            /*if the curr city displayed is as currentIndex, don't fetch again.
-              if the index is 0, there is nothing to fetch, so return.
-             */
             if(desiredCityIndex === 0 || currentIndex === desiredCityIndex){
                 return;
             }
             weather.innerHTML = "";
-            let cityID = arrOfCities[desiredCityIndex - 1].ID;
-            let loadingGif = document.getElementById("loadingGif");
+            const cityID = arrOfCities[desiredCityIndex - 1].ID;
+            const loadingGif = document.getElementById("loadingGif");
             let WeatherNameData = document.getElementById("DisplayCity");
 
             loadingGif.hidden = false;
             currentIndex = desiredCityIndex;
-
-
-            fetch('https://www.metaweather.com/api/location/' +  cityID)
-                .then(myFunctions.status)
-                .then(myFunctions.json)
-                .then(function (data)
-                {
-                    loadingGif.hidden = true;
-                    myFunctions.buildWeatherInfo(data, WeatherNameData, weather);
-                })
-
-                .catch(function (err) {
-                    console.log(err);
-                    alert("weather forecast service is not available right now, please try again later");
-                    loadingGif.hidden = true;
-                });
+            
+            myFunctions.retrieveData(loadingGif, WeatherNameData, weather, cityID);
         }
         return myFunctions;
     })();

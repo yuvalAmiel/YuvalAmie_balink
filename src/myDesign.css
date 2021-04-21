@@ -1,0 +1,14 @@
+
+body {
+    background-image: url(../background.jpg);
+}
+
+h1 {text-align: center;
+    font-size: 60px;
+    color:darkblue;}
+
+.times{
+    text-align: left;
+    color: blue;
+    font-size: 25px;
+}
